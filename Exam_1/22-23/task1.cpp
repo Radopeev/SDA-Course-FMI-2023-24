@@ -5,33 +5,67 @@
 #include <algorithm>
 using namespace std;
 
-double epsilon = 0.000000001;
-
-struct Pair {
-    double x, y;
-    int index;
-    double eff = (x * x) / y;
-    Pair(double x, double y, int index) :x(x), y(y), index(index) {}
-    bool operator<(const Pair& other)const {
-        if (abs(eff - other.eff) < epsilon) {
-            return x < other.x;
-        }
-        return eff < other.eff;
+struct Node {
+    Node* left, * right;
+    int value;
+    Node(int value) :value(value) {
+        left = nullptr;
+        right = nullptr;
     }
 };
 
-int main() {
-    int n;
-    cin >> n;
-    vector<Pair> arr;
-    for (int i = 0; i < n; i++) {
-        int x, y;
-        cin >> x >> y;
-        arr.push_back(Pair(x, y, i + 1));
+Node* insert(Node* node, int value) {
+    if (node == nullptr) {
+        return new Node(value);
     }
-    sort(arr.begin(), arr.end());
-    for (int i = n - 1; i >= 0; i--) {
-        cout << arr[i].index << " ";
+    if (node->value < value) {
+        node->right = insert(node->right, value);
+    }
+    else if (node->value > value) {
+        node->left = insert(node->left, value);
+    }
+    return node;
+}
+void print(Node* node) {
+    if (node == nullptr) {
+        return;
+    }
+    if (node->left && node->right) {
+        cout << node->value << ' ';
+    }
+    print(node->left);
+    print(node->right);
+}
+
+void solve(vector<long long>& arr, Node* node, long long x) {
+    if (node == nullptr) {
+        return;
+    }
+    solve(arr, node->left, x - 1);
+    solve(arr, node->right, x + 1);
+    arr[x + 100000] += node->value;
+}
+
+int main() {
+    int q;
+    cin >> q;
+    for (int i = 0; i < q; i++) {
+        int n;
+        cin >> n;
+        Node* root = nullptr;
+        vector<long long> arr(1000000, 0);
+        for (int j = 0; j < n; j++) {
+            int num;
+            cin >> num;
+            root = insert(root, num);
+        }
+        solve(arr, root, root->value);
+        for (int j = 0; j < 1000000; j++) {
+            if (arr[j] != 0) {
+                cout << arr[j] << ' ';
+            }
+        }
+        cout << "\n";
     }
     return 0;
 }
